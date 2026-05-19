@@ -21,7 +21,7 @@ Você é o copiloto de desenvolvimento, um engenheiro de software especialista s
 - Documentação Viva: Mantenha o arquivo `README.md` sempre atualizado. O conteúdo deve ser escrito primeiramente em português (Brasil) e conter um link âncora/seção no topo direcionando para a versão correspondente em inglês logo abaixo.
 
 4. Versionamento, Commits e Deploys (Bloqueio Rígido)
-- Bloqueio de Automação: Nunca, sob circunstância alguma, faça commits, pushes ou deploys automáticos sem uma solicitação explícita e clara no chat. O controle final do histórico do Git e do ambiente de produção é exclusivo do usuário.
+- Bloqueio de Automação: Nunca, sob circunstância alguma, faça commits, pushes ou deploys automáticos sem uma solicitudade explícita e clara no chat. O controle final do histórico do Git e do ambiente de produção é exclusivo do usuário.
 
 5. Qualidade de Código e Testes
 - Testes Orientados ao Negócio: Os testes unitários criados no sistema devem, obrigatoriamente, atender e validar o plano de negócio e suas regras de fluxo (ex: consistência de agendamentos, validação de acessos e bloqueios de segurança), garantindo que a aplicação funcione exatamente conforme as regras descritas na especificação.
@@ -50,7 +50,15 @@ Você é o copiloto de desenvolvimento, um engenheiro de software especialista s
 - Auxiliares TypeScript para Formulários: No front-end (Vue.js), deve ser implementado um arquivo TypeScript (`.ts`) dedicado contendo funções helper de preenchimento automático de formulários. Toda página de cadastro de dados deve implementar visualmente dois botões auxiliares: um botão para preencher automaticamente todos os campos com dados de teste válidos e um botão para limpar o formulário.
 - Facilitador de Login: Na tela de login, deve haver uma seção/lista lateral ou em anexo exibindo os usuários de teste gerados no banco de dados com links acionáveis. Ao clicar em um usuário dessa lista, o formulário de login e senha deve ser preenchido automaticamente com as credenciais selecionadas para agilizar o fluxo de testes locais.
 
-4. Controle de Acesso e Governança (Níveis de Usuário)
+4. Arquitetura de Layouts no Front-end (Vue.js)
+- Divisão de Componentes Globais: As páginas da aplicação Vue.js devem ser rigidamente divididas estruturalmente usando componentes de Layout reaproveitáveis para garantir consistência visual e facilidade de manutenção.
+- Fluxo Não Autenticado (Público): As páginas acessíveis sem login devem renderizar obrigatoriamente a combinação dos componentes `Header` (topo) e `Footer` (rodapé).
+- Fluxo Autenticado (Privado): As páginas restritas a usuários logados devem renderizar obrigatoriamente os componentes `AuthHeader` e `AuthFooter`.
+- Organização do Escopo HTML / Body: Para permitir que o conteúdo central (body) de cada tela seja editado de forma independente e simplificada mantendo o mesmo padrão do projeto, a estrutura deve seguir as seguintes regras:
+  * Os componentes de cabeçalho (`Header` e `AuthHeader`) devem conter e gerenciar toda a estrutura de tags de abertura iniciais do layout, estendendo-se explicitamente até a tag de abertura `<body>` (ou container wrapper principal equivalente).
+  * Os componentes de rodapé (`Footer` and `AuthFooter`) devem encapsular as rotinas finais e realizar estritamente o fechamento dessa mesma estrutura, incluindo a tag de fechamento `</body>` (ou container wrapper correspondente).
+
+5. Controle de Acesso e Governança (Níveis de Usuário)
 - Controle via Enums PHP: O nível de acesso (`role`) do usuário deve ser rigidamente regido por um PHP Enum com os seguintes valores:
   * `0` => Patient (Paciente)
   * `1` => Admin (Staff - Administrador)
@@ -60,11 +68,11 @@ Você é o copiloto de desenvolvimento, um engenheiro de software especialista s
   * Usuários logados em uma determinada área NÃO podem acessar áreas não logadas.
   * Um usuário do tipo Paciente está estritamente proibido de acessar a área de Staff, e qualquer usuário Staff está proibido de acessar rotas exclusivas de Pacientes.
 
-5. Segurança e Criptografia Avançada de Dados do Cliente
-- Proteção de CPF: Por se tratar de um sistema de saúde, dados identificáveis como o CPF devem ser armazenados no banco de dados PostgreSQL utilizando criptografia adequada/assimétrica ou rotinas nativas de criptografia baseadas em chaves gerenciadas pelo ambiente (`.env`). Nunca salve o CPF em texto limpo.
+6. Segurança e Criptografia Avançada de Dados do Cliente
+- Proteção de CPF: Por se tratar de um sistema de saúde, dados identificáveis como o CPF devem ser armazenados no banco de dados PostgreSQL utilizando criptografia adequada/assimétrica ou rotinas nativas de criptografia baseadas em chaves gerenciadas pelo ambiente (`.env`). Nunca salve o CPF in natura (texto limpo).
 - Governança de Uso: Nenhum usuário (Paciente ou Staff) poderá utilizar as funcionalidades ativas do sistema sem antes registrar o aceite explícito aos Termos de Uso e às Políticas de Privacidade vigentes. Esse estado de aceite deve ser verificado e persistido.
 
-6. Entidades do Banco de Dados (Tabelas em Inglês)
+7. Entidades do Banco de Dados (Tabelas em Inglês)
 As migrações e modelos devem contemplar as seguintes entidades e suas respectivas regras de negócio:
 - `users`: Dados gerais de autenticação e credenciais (com hash Argon2id).
 - `patients`: Dados básicos do paciente (nome, data de nascimento, CPF criptografado, queixa principal, endereço completo: logradouro, bairro, cidade, e histórico clínico relatado).
@@ -78,11 +86,11 @@ As migrações e modelos devem contemplar as seguintes entidades e suas respecti
 - `reports`: Relatórios consolidados do sistema.
 - `unavailability_periods`: Períodos de indisponibilidade de profissionais. Permite que profissionais informem datas futuras em que não realizarão atendimentos (ex: férias, plantão externo, licença). Utilizado pelo calendário de agendamentos para bloquear visualmente as datas indisponíveis de cada profissional.
 
-7. Gestão de Indisponibilidade de Profissionais
+8. Gestão de Indisponibilidade de Profissionais
 - O sistema deve permitir que profissionais (ou staff administrativo) cadastrem períodos de indisponibilidade, informando data de início, data de fim e motivo opcional.
 - Não pode haver sobreposição de períodos de indisponibilidade para o mesmo profissional.
 - O calendário de agendamentos deve consultar a rota `GET /api/staff/professionals/{professional}/unavailability/future` para obter as datas bloqueadas e impedir agendamentos nesses períodos.
 - Apenas usuários Staff (Admin e Operational) podem gerenciar esses períodos via API.
 
-8. Sistema de Mensageria e Front-end (Staff)
+9. Sistema de Mensageria e Front-end (Staff)
 - Indicador Dinâmico: O menu principal da área do Staff (Admin e Operacional) deve exibir obrigatoriamente um ícone de notificações dinâmico indicando o número exato de mensagens não lidas destinadas ao profissional ou operador atualmente logado. A query de contagem deve filtrar estritamente as mensagens cujo destino corresponde ao usuário autenticado (via payload do JWT) e que possuam o status de não lidas.

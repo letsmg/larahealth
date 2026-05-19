@@ -104,26 +104,40 @@ jobs:
                 sudo mv /tmp/larahealth_storage_backup "$BASE_DIR/storage/app/public"
             fi
 
-            # 6. Executa comandos internos do Laravel Artisan
+            # 6. AJUSTE PRELIMINAR DE PERMISSÕES (Isso resolve o erro do deploy)
+            # Garante que o usuário que roda o deploy consiga escrever no storage imediatamente
+            echo "🔒 Aplicando permissões iniciais para execução do Artisan..."
+            sudo chown -R www-data:www-data "$BASE_DIR"
+            sudo chmod -R 775 "$BASE_DIR/storage" "$BASE_DIR/bootstrap/cache"
+            
+            # Adiciona o usuário do terminal (ubuntu) ao grupo do Nginx temporariamente se necessário,
+            # ou executa os comandos do artisan com o dono correto do projeto.
+            
             echo "⚙️ Executando migrações e rotinas do Laravel..."
             cd "$BASE_DIR"
             
-            # Limpa qualquer cache de rota/configuração antigo
-            php artisan config:clear
-            php artisan route:clear
-            php artisan view:clear
+            # Limpa qualquer cache residual ANTES de rodar as migrations
+            sudo -u www-data php artisan config:clear
+            sudo -u www-data php artisan route:clear
+            sudo -u www-data php artisan view:clear
 
-            # Executa as migrações (forçando em ambiente de produção) e os seeders
-            php artisan migrate --force
-            php artisan db:seed --force
+            # Executa as migrações e seeders usando o usuário do Nginx para não quebrar permissões
+            sudo -u www-data php artisan migrate --force
+            sudo -u www-data php artisan db:seed --force
 
-            # Recria o link simbólico público correto do storage do Laravel
-            php artisan storage:link
+            # Recria o link simbólico público do storage
+            sudo -u www-data php artisan storage:link
 
-            # Otimiza o Laravel cacheando as novas configurações para dar performance
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
+            # Otimiza o Laravel gerando os novos caches com o dono correto
+            sudo -u www-data php artisan config:cache
+            sudo -u www-data php artisan route:cache
+            sudo -u www-data php artisan view:cache
+
+            # 7. Ajustar permissões finais de segurança para o Nginx
+            echo "🔒 Alinhando permissões finais de segurança..."
+            sudo find "$BASE_DIR" -type d -exec chmod 755 {} \;
+            sudo find "$BASE_DIR" -type f -exec chmod 644 {} \;
+            sudo chmod -R 775 "$BASE_DIR/storage" "$BASE_DIR/bootstrap/cache"
 
             # 7. Ajusta as permissões de arquivos para o Nginx (www-data) ler corretamente
             echo "🔒 Ajustando permissões de pasta para o Nginx..."
