@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Models\Message;
 use App\Models\Patient;
 use App\Models\Professional;
 use Illuminate\Http\JsonResponse;
@@ -122,6 +123,7 @@ class AppointmentController extends Controller
 
     /**
      * Store a new appointment.
+     * Gera automaticamente uma mensagem de notificação para o profissional.
      */
     public function store(Request $request): JsonResponse
     {
@@ -135,6 +137,26 @@ class AppointmentController extends Controller
         ]);
 
         $appointment = Appointment::create($validated);
+
+        // Carrega relacionamentos para montar a mensagem
+        $appointment->load(['patient:id,full_name', 'professional:id,full_name,specialty,user_id']);
+
+        // Gera mensagem automática para o profissional avisando sobre o agendamento
+        if ($appointment->professional && $appointment->professional->user_id) {
+            $patientName = $appointment->patient?->full_name ?? 'Paciente';
+            $formattedDate = $appointment->appointment_date->format('d/m/Y \à\s H:i');
+
+            Message::create([
+                'sender_id' => $request->user()->id,
+                'recipient_id' => $appointment->professional->user_id,
+                'subject' => 'Novo agendamento',
+                'body' => "Olá! Um novo agendamento foi marcado:\n\n" .
+                    "Paciente: {$patientName}\n" .
+                    "Data: {$formattedDate}\n" .
+                    ($appointment->notes ? "Observações: {$appointment->notes}\n" : '') .
+                    ($appointment->is_return ? "Tipo: Retorno\n" : "Tipo: Consulta inicial\n"),
+            ]);
+        }
 
         return response()->json([
             'message' => 'Agendamento realizado com sucesso!',
@@ -181,5 +203,19 @@ class AppointmentController extends Controller
         $appointment->delete();
 
         return response()->json(['message' => 'Agendamento removido com sucesso!']);
+    }
+
+    /**
+     * Count pending appointments (future or today) for the notification badge.
+     * Retorna a quantidade de consultas com data futura ou até o final do dia de hoje
+     * que ainda não foram pagas, para exibir um indicador visual no menu.
+     */
+    public function pendingCount(): JsonResponse
+    {
+        $count = Appointment::where('appointment_date', '>=', now()->startOfDay())
+            ->where('is_paid', false)
+            ->count();
+
+        return response()->json(['pending_count' => $count]);
     }
 }

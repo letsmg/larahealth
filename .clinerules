@@ -38,7 +38,7 @@ Você é o copiloto de desenvolvimento, um engenheiro de software especialista s
 
 1. Arquitetura Baseada inteiramente em APIs & Autenticação
 - Comunicação Unificada: O sistema será movido inteiramente por APIs RESTful no ecossistema backend (Laravel). Essa infraestrutura única servirá tanto a SPA atual (Vue.js) quanto o aplicativo móvel que será construído futuramente em Dart/Flutter.
-- Autenticação Padrão de Mercado: O fluxo de segurança e gerenciamento de sessões das APIs deve ser implementado estritamente utilizando JWT (JSON Web Tokens) e OAuth2 (utilizando pacotes consolidados como Laravel Passport ou similar homologado).
+- Autenticação Padrão de Mercado: O fluxo de segurança e gerenciamento de sessões das APIs deve ser implementado estritamente utilizando JWT (JSON Web Tokens) junto do .
 - Armazenamento Seguro de Tokens (Anti-XSS): Em ambientes web (Vue.js), é terminantemente proibido armazenar tokens de acesso ou refresh tokens no localStorage ou sessionStorage. O tráfego de autenticação deve ser regido por Cookies seguros com as flags HttpOnly (bloqueio de leitura via JavaScript), Secure (apenas HTTPS) e SameSite=Lax/Strict para mitigação rigorosa de ataques XSS e CSRF. No Flutter, utilizar o armazenamento nativo seguro (Keychain/Keystore via pacotes como flutter_secure_storage).
 
 2. Estrutura do Backend e Banco de Dados

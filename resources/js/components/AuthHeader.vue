@@ -55,13 +55,20 @@
 
           <router-link
             to="/staff/appointments"
-            class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
+            class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors relative"
             :class="isActive('/staff/appointments') ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 hover:bg-gray-100'"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
             Agenda
+            <!-- Pending appointments badge (future/today not paid) -->
+            <span
+              v-if="pendingAppointments > 0"
+              class="absolute right-3 top-1/2 -translate-y-1/2 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold text-white bg-red-500 rounded-full"
+            >
+              {{ pendingAppointments > 99 ? '99+' : pendingAppointments }}
+            </span>
           </router-link>
 
           <router-link
@@ -126,6 +133,7 @@ import emitter from '../eventBus'
 const router = useRouter()
 const route = useRoute()
 const unreadCount = ref(0)
+const pendingAppointments = ref(0)
 let pollingInterval: ReturnType<typeof setInterval> | null = null
 
 
@@ -159,6 +167,17 @@ async function fetchUnreadCount() {
   }
 }
 
+async function fetchPendingAppointments() {
+  try {
+    if (!isStaff.value) return
+
+    const { data } = await axios.get('/staff/appointments/pending-count')
+    pendingAppointments.value = data.pending_count
+  } catch {
+    // Silently fail
+  }
+}
+
 async function logout() {
   try {
     await axios.post('/logout')
@@ -172,7 +191,11 @@ async function logout() {
 
 onMounted(() => {
   fetchUnreadCount()
-  pollingInterval = setInterval(fetchUnreadCount, 30000)
+  fetchPendingAppointments()
+  pollingInterval = setInterval(() => {
+    fetchUnreadCount()
+    fetchPendingAppointments()
+  }, 30000)
 
   // Atualização instantânea quando mensagens são marcadas como lida/não lida
   emitter.on('messages:read-status-changed', () => {
