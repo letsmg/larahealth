@@ -106,21 +106,34 @@ jobs:
             echo "⚙️ Executando migrações e rotinas do Laravel..."
             cd "$BASE_DIR"
             
-            # Limpa qualquer cache residual ANTES de rodar as migrations
+            # Limpa qualquer cache residual ANTES de mexer no banco
             sudo -u www-data php artisan config:clear
             sudo -u www-data php artisan route:clear
-            sudo -u www-data php artisan view:clear
 
-            # Executa as migrações e seeders usando o usuário do Nginx
-            sudo -u www-data php artisan migrate --force
+            # CORREÇÃO: Usamos migrate:fresh para limpar o banco e evitar erros de duplicidade (Unique Violation)
+            # nas tabelas que estão populando massa de testes automaticamente (Regra do seu .clinerules)
+            sudo -u www-data php artisan migrate:fresh --force
             sudo -u www-data php artisan db:seed --force
 
-            # Recria o link simbólico público do storage
+            # Recria o link simbólico público do storage com o usuário correto
             sudo -u www-data php artisan storage:link
 
-            # CORREÇÃO: Removemos o view:cache, mantendo apenas o essencial para APIs
-            php artisan config:cache
-            php artisan route:cache
+            # Otimiza o Laravel gerando os novos caches SEMPRE como www-data
+            sudo -u www-data php artisan config:cache
+            sudo -u www-data php artisan route:cache
+
+            # 7. Ajustar permissões finais de segurança para o Nginx
+            echo "🔒 Alinhando permissões finais de segurança..."
+            sudo chown -R www-data:www-data "$BASE_DIR"
+            sudo find "$BASE_DIR" -type d -exec chmod 755 {} \;
+            sudo find "$BASE_DIR" -type f -exec chmod 644 {} \;
+            sudo chmod -R 775 "$BASE_DIR/storage" "$BASE_DIR/bootstrap/cache"
+
+            # 8. Limpeza de arquivos temporários do servidor
+            rm -f /tmp/deploy-larahealth.zip
+            sudo rm -rf /tmp/larahealth_storage_backup
+            
+            echo "✅ Deploy de LaraHealth finalizado com sucesso absoluto!"
 
             # 7. Ajustar permissões finais de segurança para o Nginx
             echo "🔒 Alinhando permissões finais de segurança..."
