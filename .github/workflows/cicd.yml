@@ -1,0 +1,139 @@
+name: 🚀 Deploy larahealth (Direto)
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐘 Configurar PHP (Para ferramentas locais no Runner)
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, iconv, mysql, pgsql
+
+      - name: 📦 Instalar dependências do Composer no Runner
+        run: composer install --no-interaction --prefer-dist
+
+      - name: 🟢 Configurar Node.js (Para os assets/frontend)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Instalar dependências do Node e Rodar Builds do Frontend
+        run: |
+          npm ci
+          npm run prod
+
+      - name: 🤐 Criar Pacote de Deploy Estruturado
+        run: |
+          mkdir build-tmp
+          # Copia as pastas estruturais necessárias (resources NÃO vai para produção)
+          cp -r app config db public storage build-tmp/
+          # Copia arquivos vitais de configuração da raiz
+          cp composer.json composer.lock phinx.php package.json build-tmp/ 2>/dev/null || true
+          
+          # Copia o .env.production como .env para produção
+          cp .env.production build-tmp/.env 2>/dev/null || true
+          
+          # Remove arquivos de desenvolvimento que não devem ir para produção
+          rm -f build-tmp/public/hot
+          cd build-tmp
+          zip -r ../deploy-larahealth.zip .
+          cd ..
+
+      - name: 🔑 Configure SSH
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
+
+      - name: 🚀 Executar Deploy e Comandos no Servidor
+        run: |
+          SERVER_IP="${{ secrets.SERVER_IP }}"
+
+          scp -o StrictHostKeyChecking=no deploy-larahealth.zip ubuntu@$SERVER_IP:/tmp/
+
+          ssh -o StrictHostKeyChecking=no ubuntu@$SERVER_IP << 'EOF'
+            set -e
+
+            BASE_DIR="/var/www/larahealth"
+
+            # 1. Garante que o unzip está instalado
+            if ! command -v unzip &> /dev/null; then
+                echo "📦 Instalando unzip..."
+                sudo apt-get update -y && sudo apt-get install unzip -y
+            fi
+
+            # 2. Cria estrutura de pastas e protege uploads existentes
+            sudo mkdir -p "$BASE_DIR"
+            sudo mkdir -p "$BASE_DIR/storage/imgs"
+            
+            if [ -d "$BASE_DIR/storage/imgs" ]; then
+                sudo mv "$BASE_DIR/storage/imgs" /tmp/storage_imgs_backup
+            fi
+
+            echo "🧹 Limpando diretório antigo..."
+            sudo rm -rf "${BASE_DIR:?}"/*
+
+            sudo mkdir -p "$BASE_DIR/storage"
+            if [ -d "/tmp/storage_imgs_backup" ]; then
+                sudo mv /tmp/storage_imgs_backup "$BASE_DIR/storage/imgs"
+            fi
+
+            # 3. Descompacta o novo pacote
+            echo "📂 Descompactando novo pacote..."
+            sudo unzip -o /tmp/deploy-larahealth.zip -d "$BASE_DIR"
+
+            # 4. Instalação das dependências do Composer em Produção
+            echo "📦 Instalando dependências do Composer..."
+            cd "$BASE_DIR"
+            if [ -f "composer.json" ]; then
+                if ! command -v composer &> /dev/null; then
+                    curl -sS https://getcomposer.org/installer | php
+                    sudo mv composer.phar /usr/local/bin/composer
+                fi
+
+                sudo COMPOSER_ALLOW_SUPERUSER=1 COMPOSER_HOME=/tmp/.composer composer install \
+                    --no-dev \
+                    --optimize-autoloader \
+                    --no-interaction \
+                    --prefer-dist
+            fi
+
+            # 5. Executa as Migrações de Banco de Dados e os Links de Storage no Servidor Real
+            echo "⚙️ Executando migrações de banco no servidor..."
+            php vendor/bin/phinx rollback -e development -t 0
+            php vendor/bin/phinx migrate -e development
+            php db/seeders/run_seeds.php
+
+            echo "🔗 Atualizando links simbólicos..."
+            # Remove o link antigo ou pasta antiga se existirem (evita duplicação)
+            sudo rm -f "$BASE_DIR/public/imgs"
+            
+            # Cria o link simbólico direto pelo terminal do Linux (muito mais seguro que via PHP)
+            sudo ln -s ../storage/imgs "$BASE_DIR/public/imgs"
+            echo "Link criado: public/imgs -> storage/imgs"
+
+            # 6. Ajustar permissões finais para o Nginx
+            echo "🔒 Ajustando permissões para www-data..."
+            sudo chown -R www-data:www-data "$BASE_DIR"
+            sudo find "$BASE_DIR" -type d -exec chmod 755 {} \;
+            sudo find "$BASE_DIR" -type f -exec chmod 644 {} \;
+
+            # 7. Limpeza
+            rm -f /tmp/deploy-larahealth.zip
+            sudo rm -rf /tmp/storage_imgs_backup
+            
+            echo "✅ Deploy larahealth Finalizado com sucesso!"
+          EOF
+
+      - name: 🧹 Cleanup Runner
+        if: always()
+        run: rm -rf build-tmp deploy-larahealth.zip
