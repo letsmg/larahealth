@@ -27,6 +27,30 @@ class Patient extends Model
     ];
 
     /**
+     * The accessors to append to the model's array form.
+     */
+    protected $appends = ['cpf_masked', 'birth_date'];
+
+    /**
+     * Get the masked CPF (show only last 3 digits).
+     */
+    public function getCpfMaskedAttribute(): ?string
+    {
+        return $this->cpf_hash
+            ? '***.***.***-' . substr($this->cpf_hash, -3)
+            : null;
+    }
+
+    /**
+     * Alias for date_of_birth for frontend compatibility.
+     */
+    public function getBirthDateAttribute(): ?string
+    {
+        return $this->date_of_birth;
+    }
+
+
+    /**
      * User account relationship.
      */
     public function user(): BelongsTo

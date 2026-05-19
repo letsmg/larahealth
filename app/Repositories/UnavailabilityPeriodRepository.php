@@ -21,6 +21,7 @@ class UnavailabilityPeriodRepository extends BaseRepository
     public function findByProfessional(int $professionalId): Collection
     {
         return $this->model
+            ->with('professional:id,full_name,specialty')
             ->where('professional_id', $professionalId)
             ->orderBy('start_date')
             ->get();
@@ -32,11 +33,13 @@ class UnavailabilityPeriodRepository extends BaseRepository
     public function findFutureByProfessional(int $professionalId): Collection
     {
         return $this->model
+            ->with('professional:id,full_name,specialty')
             ->where('professional_id', $professionalId)
             ->where('end_date', '>=', now()->toDateString())
             ->orderBy('start_date')
             ->get();
     }
+
 
     /**
      * Verifica se uma data específica está dentro de algum período de indisponibilidade.

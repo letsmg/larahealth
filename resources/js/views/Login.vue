@@ -1,5 +1,6 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center p-4">
+  <div class="min-h-screen bg-gradient-to-br from-emerald-50/80 to-teal-50/80 flex items-center justify-center p-4 relative"
+    style="background-image: url('/storage/fundo.png'); background-size: cover; background-position: center; background-blend-mode: overlay;">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden flex flex-col md:flex-row">
       <!-- Left: Login Form -->
       <div class="p-8 md:p-10 flex-1">
@@ -113,13 +114,11 @@ async function handleLogin() {
   error.value = ''
 
   try {
+    // Token é armazenado em cookie HttpOnly pelo backend (inacessível via JS)
+    // O cookie é enviado automaticamente graças ao withCredentials: true
     const { data } = await axios.post('/login', form.value)
 
-    localStorage.setItem('token', data.token)
     localStorage.setItem('user', JSON.stringify(data.user))
-
-    // Set default auth header
-    axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`
 
     // Redirect based on role
     const role = data.user.role
@@ -134,4 +133,5 @@ async function handleLogin() {
     loading.value = false
   }
 }
+
 </script>

@@ -44,14 +44,16 @@ class AuthController extends Controller
     }
 
     /**
-     * Logout user (revoke current token).
+     * Logout user (revoke current token) and clear auth cookie.
      */
     public function logout(Request $request): JsonResponse
     {
         $this->authService->logout($request->user());
 
-        return response()->json(['message' => 'Logout realizado com sucesso!']);
+        return response()->json(['message' => 'Logout realizado com sucesso!'])
+            ->withCookie(cookie()->forget('auth_token'));
     }
+
 
     /**
      * Get authenticated user profile.

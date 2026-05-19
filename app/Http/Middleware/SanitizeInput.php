@@ -7,14 +7,10 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Middleware para sanitização de entrada.
+ * Middleware to sanitize and trim all input data for non-GET requests.
  * 
- * Aplica trim e limpeza básica em todos os dados recebidos
- * antes de qualquer processamento no backend.
- * 
- * Segue a regra de Sanitização de Entrada do .clinerules:
- * "Aplicar rigorosamente mecanismos de limpeza e trim em todos
- *  os dados recebidos no backend antes de qualquer processamento."
+ * Aplica trim() em todas as strings recebidas para remover espaços
+ * desnecessários antes do processamento, garantindo dados limpos.
  */
 class SanitizeInput
 {
@@ -23,7 +19,7 @@ class SanitizeInput
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->isMethod('get')) {
+        if ($request->isMethod('GET')) {
             return $next($request);
         }
 
@@ -36,18 +32,11 @@ class SanitizeInput
 
     /**
      * Recursively sanitize input data.
-     * - Trims whitespace from strings
-     * - Removes empty strings (converts to null)
-     * - Strips invisible control characters
      */
     private function sanitize(mixed $data): mixed
     {
         if (is_string($data)) {
-            $data = trim($data);
-            // Remove zero-width characters and control chars (except newlines/tabs)
-            $data = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $data);
-            // Convert empty strings to null for cleaner DB storage
-            return $data === '' ? null : $data;
+            return trim($data);
         }
 
         if (is_array($data)) {

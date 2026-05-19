@@ -1,6 +1,7 @@
 <template>
   <!-- AuthHeader: estrutura de layout para área autenticada (sidebar + topo) -->
-  <div class="min-h-screen bg-gray-50 flex">
+  <div class="min-h-screen bg-gray-50/80 flex relative"
+    style="background-image: url('/storage/fundo.png'); background-size: cover; background-position: center; background-blend-mode: overlay;">
     <!-- Sidebar -->
     <aside class="w-64 bg-white border-r border-gray-200 flex flex-col">
       <div class="p-6 border-b border-gray-200">
@@ -53,6 +54,17 @@
           </router-link>
 
           <router-link
+            to="/staff/appointments"
+            class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
+            :class="isActive('/staff/appointments') ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 hover:bg-gray-100'"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            Agenda
+          </router-link>
+
+          <router-link
             to="/staff/unavailability"
             class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
             :class="isActive('/staff/unavailability') ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 hover:bg-gray-100'"
@@ -61,6 +73,17 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
             Indisponibilidade
+          </router-link>
+
+          <router-link
+            to="/staff/reports"
+            class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
+            :class="isActive('/staff/reports') ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 hover:bg-gray-100'"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Relatórios
           </router-link>
         </template>
       </nav>
@@ -97,11 +120,14 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
+import emitter from '../eventBus'
+
 
 const router = useRouter()
 const route = useRoute()
 const unreadCount = ref(0)
 let pollingInterval: ReturnType<typeof setInterval> | null = null
+
 
 const user = JSON.parse(localStorage.getItem('user') || '{}')
 const isStaff = computed(() => user.role === 1 || user.role === 2)
@@ -123,33 +149,43 @@ function isActive(path: string): boolean {
 
 async function fetchUnreadCount() {
   try {
-    const token = localStorage.getItem('token')
-    if (!token || !isStaff.value) return
+    if (!isStaff.value) return
 
-    const { data } = await axios.get('/staff/messages/unread-count', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    // Token é enviado automaticamente via cookie HttpOnly (withCredentials: true)
+    const { data } = await axios.get('/staff/messages/unread-count')
     unreadCount.value = data.unread_count
   } catch {
     // Silently fail
   }
 }
 
-function logout() {
-  localStorage.removeItem('token')
+async function logout() {
+  try {
+    await axios.post('/logout')
+  } catch {
+    // Silently fail - cookie will be cleared anyway
+  }
   localStorage.removeItem('user')
-  delete axios.defaults.headers.common['Authorization']
   router.push('/login')
 }
+
 
 onMounted(() => {
   fetchUnreadCount()
   pollingInterval = setInterval(fetchUnreadCount, 30000)
+
+  // Atualização instantânea quando mensagens são marcadas como lida/não lida
+  emitter.on('messages:read-status-changed', () => {
+    fetchUnreadCount()
+  })
 })
 
 onUnmounted(() => {
   if (pollingInterval) {
     clearInterval(pollingInterval)
   }
+  emitter.off('messages:read-status-changed')
 })
 </script>
+
+

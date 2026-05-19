@@ -1,0 +1,185 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\Appointment;
+use App\Models\Patient;
+use App\Models\Professional;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+/**
+ * Controller for managing appointments (agenda).
+ * 
+ * Intenção: Centralizar o CRUD de agendamentos, incluindo busca de pacientes
+ * por nome e listagem de datas indisponíveis dos profissionais para o calendário.
+ */
+class AppointmentController extends Controller
+{
+    /**
+     * List appointments with optional filters.
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $query = Appointment::with(['patient:id,full_name', 'professional:id,full_name,specialty']);
+
+        if ($request->filled('professional_id')) {
+            $query->where('professional_id', $request->professional_id);
+        }
+
+        if ($request->filled('date')) {
+            $query->whereDate('appointment_date', $request->date);
+        }
+
+        $appointments = $query->orderBy('appointment_date', 'desc')
+            ->paginate($request->get('per_page', 50));
+
+        return response()->json(['data' => $appointments]);
+    }
+
+    /**
+     * Search patients by name (for autocomplete/select2).
+     */
+    public function searchPatients(Request $request): JsonResponse
+    {
+        $term = $request->get('q', '');
+
+        $patients = Patient::where('full_name', 'ilike', "%{$term}%")
+            ->select('id', 'full_name')
+            ->orderBy('full_name')
+            ->limit(20)
+            ->get();
+
+        return response()->json(['data' => $patients]);
+    }
+
+    /**
+     * Search professionals by name (for autocomplete/select2).
+     */
+    public function searchProfessionals(Request $request): JsonResponse
+    {
+        $term = $request->get('q', '');
+
+        $professionals = Professional::where('full_name', 'ilike', "%{$term}%")
+            ->where('is_active', true)
+            ->select('id', 'full_name', 'specialty')
+            ->orderBy('full_name')
+            ->limit(20)
+            ->get();
+
+        return response()->json(['data' => $professionals]);
+    }
+
+    /**
+     * Get unavailable dates for a professional (used by calendar).
+     * Returns an array of date strings that should be blocked.
+     */
+    public function unavailableDates(Professional $professional): JsonResponse
+    {
+        $periods = $professional->unavailabilityPeriods()
+            ->where('end_date', '>=', now()->subDay())
+            ->get();
+
+        $dates = [];
+        foreach ($periods as $period) {
+            $current = $period->start_date->copy();
+            while ($current <= $period->end_date) {
+                $dates[] = $current->format('Y-m-d');
+                $current->addDay();
+            }
+        }
+
+        return response()->json(['data' => array_unique($dates)]);
+    }
+
+    /**
+     * Get all unavailable dates across ALL professionals (for calendar overview).
+     * Returns an array of objects with date, professional_id and professional_name.
+     * Usado quando nenhum profissional específico está selecionado no filtro.
+     */
+    public function allUnavailableDates(): JsonResponse
+    {
+        $periods = \App\Models\UnavailabilityPeriod::with('professional:id,full_name')
+            ->where('end_date', '>=', now()->subDay())
+            ->get();
+
+        $dates = [];
+        foreach ($periods as $period) {
+            $current = $period->start_date->copy();
+            while ($current <= $period->end_date) {
+                $dates[] = [
+                    'date' => $current->format('Y-m-d'),
+                    'professional_id' => $period->professional_id,
+                    'professional_name' => $period->professional?->full_name ?? 'Profissional',
+                ];
+                $current->addDay();
+            }
+        }
+
+        return response()->json(['data' => $dates]);
+    }
+
+    /**
+     * Store a new appointment.
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'patient_id' => ['required', 'exists:patients,id'],
+            'professional_id' => ['required', 'exists:professionals,id'],
+            'appointment_date' => ['required', 'date', 'after:now'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+            'is_return' => ['boolean'],
+            'original_appointment_id' => ['nullable', 'exists:appointments,id'],
+        ]);
+
+        $appointment = Appointment::create($validated);
+
+        return response()->json([
+            'message' => 'Agendamento realizado com sucesso!',
+            'data' => $appointment->load(['patient:id,full_name', 'professional:id,full_name,specialty']),
+        ], 201);
+    }
+
+    /**
+     * Show a specific appointment.
+     */
+    public function show(Appointment $appointment): JsonResponse
+    {
+        return response()->json([
+            'data' => $appointment->load(['patient', 'professional']),
+        ]);
+    }
+
+    /**
+     * Update an appointment.
+     */
+    public function update(Request $request, Appointment $appointment): JsonResponse
+    {
+        $validated = $request->validate([
+            'appointment_date' => ['sometimes', 'date', 'after:now'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+            'is_paid' => ['boolean'],
+            'payment_method' => ['nullable', 'string', 'max:50'],
+            'is_return' => ['boolean'],
+        ]);
+
+        $appointment->update($validated);
+
+        return response()->json([
+            'message' => 'Agendamento atualizado com sucesso!',
+            'data' => $appointment->fresh()->load(['patient:id,full_name', 'professional:id,full_name,specialty']),
+        ]);
+    }
+
+    /**
+     * Delete an appointment.
+     */
+    public function destroy(Appointment $appointment): JsonResponse
+    {
+        $appointment->delete();
+
+        return response()->json(['message' => 'Agendamento removido com sucesso!']);
+    }
+}

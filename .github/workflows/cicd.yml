@@ -36,12 +36,10 @@ jobs:
         run: |
           mkdir build-tmp
           
-          # Copia apenas as pastas cruciais do Laravel para produção (resources e node_modules NÃO vão)
-          # Inclui a pasta vendor já pronta e otimizada pelo Runner
-          cp -r app config database public storage vendor build-tmp/
+          # CORREÇÃO: Incluídas as pastas 'routes' e 'bootstrap' inteiras no pacote de produção
+          cp -r app bootstrap config database public routes storage vendor build-tmp/
           
-          # Copia os arquivos de configuração vitais da raiz do projeto
-          cp bootstrap/app.php build-tmp/bootstrap/ 2>/dev/null || cp -r bootstrap build-tmp/
+          # Copia os arquivos vitais da raiz do projeto
           cp artisan composer.json package.json build-tmp/
           
           # Copia o .env.production como o .env oficial de produção

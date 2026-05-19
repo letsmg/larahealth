@@ -70,4 +70,30 @@ class MessageController extends Controller
 
         return response()->json(['message' => 'Mensagem marcada como lida.']);
     }
+
+    /**
+     * Toggle message read/unread status.
+     * Permite marcar uma mensagem já lida como não lida.
+     */
+    public function toggleRead(Message $message, Request $request): JsonResponse
+    {
+        // Ensure the message belongs to the authenticated user
+        if ($message->recipient_id !== $request->user()->id) {
+            return response()->json(['message' => 'Não autorizado.'], 403);
+        }
+
+        $message->update([
+            'is_read' => !$message->is_read,
+            'read_at' => $message->is_read ? null : now(),
+        ]);
+
+        $status = $message->is_read ? 'lida' : 'não lida';
+
+        return response()->json([
+            'message' => "Mensagem marcada como {$status}.",
+            'data' => $message->fresh(),
+        ]);
+    }
 }
+
+

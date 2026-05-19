@@ -3,9 +3,13 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\PatientController;
+use App\Http\Controllers\Api\ProfessionalController;
+use App\Http\Controllers\Api\ReportsController;
 use App\Http\Controllers\Api\UnavailabilityPeriodController;
+use App\Http\Controllers\Api\UserController;
 use App\Http\Middleware\CheckUserRole;
 use Illuminate\Support\Facades\Route;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -55,12 +59,35 @@ Route::middleware('auth:sanctum')->group(function () {
                 Route::post('/', [MessageController::class, 'send']);
                 Route::get('/unread-count', [MessageController::class, 'unreadCount']);
                 Route::patch('/{message}/read', [MessageController::class, 'markAsRead']);
+                Route::patch('/{message}/toggle-read', [MessageController::class, 'toggleRead']);
+
             });
 
             // Patients management
             Route::get('/patients', [PatientController::class, 'index']);
             Route::get('/patients/{patient}', [PatientController::class, 'show']);
             Route::put('/patients/{patient}', [PatientController::class, 'update']);
+
+            // Users list (for message recipient selection)
+            Route::get('/users', [UserController::class, 'index']);
+
+            // Appointments (agenda)
+            Route::prefix('appointments')->group(function () {
+                Route::get('/', [AppointmentController::class, 'index']);
+                Route::post('/', [AppointmentController::class, 'store']);
+                Route::get('/{appointment}', [AppointmentController::class, 'show']);
+                Route::put('/{appointment}', [AppointmentController::class, 'update']);
+                Route::delete('/{appointment}', [AppointmentController::class, 'destroy']);
+                Route::get('/search/patients', [AppointmentController::class, 'searchPatients']);
+                Route::get('/search/professionals', [AppointmentController::class, 'searchProfessionals']);
+                Route::get('/professionals/{professional}/unavailable-dates', [AppointmentController::class, 'unavailableDates']);
+            });
+
+            // Professionals list
+            Route::get('/professionals', [ProfessionalController::class, 'index']);
+
+            // All unavailability dates across all professionals (for calendar overview)
+            Route::get('/appointments/all-unavailable-dates', [AppointmentController::class, 'allUnavailableDates']);
 
             // Professional unavailability periods
             Route::prefix('professionals/{professional}/unavailability')->group(function () {
@@ -70,5 +97,12 @@ Route::middleware('auth:sanctum')->group(function () {
                 Route::put('/{period}', [UnavailabilityPeriodController::class, 'update']);
                 Route::delete('/{period}', [UnavailabilityPeriodController::class, 'destroy']);
             });
+
+            // Reports
+            Route::prefix('reports')->group(function () {
+                Route::get('/patients', [ReportsController::class, 'patients']);
+                Route::get('/professionals', [ReportsController::class, 'professionals']);
+            });
         });
+
 });

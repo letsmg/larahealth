@@ -26,8 +26,10 @@ class MessageRepository extends BaseRepository
     public function findByRecipient(int $recipientId, int $perPage = 15)
     {
         return $this->model
+            ->with('sender:id,name,email')
             ->where('recipient_id', $recipientId)
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }
+
 }

@@ -219,11 +219,10 @@ async function handleRegister() {
   error.value = ''
 
   try {
+    // Token é armazenado em cookie HttpOnly pelo backend (inacessível via JS)
     const { data } = await axios.post('/register', form.value)
 
-    localStorage.setItem('token', data.token)
     localStorage.setItem('user', JSON.stringify(data.user))
-    axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`
 
     router.push('/patient/dashboard')
   } catch (e: any) {
@@ -232,4 +231,5 @@ async function handleRegister() {
     loading.value = false
   }
 }
+
 </script>

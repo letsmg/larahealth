@@ -19,12 +19,24 @@ class PatientController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $patients = $this->patientRepository->paginate(
-            $request->get('per_page', 15)
-        );
+        $query = Patient::with('user');
+
+        // Filtro por nome (busca no full_name do paciente ou name do user)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('full_name', 'ilike', "%{$search}%")
+                  ->orWhereHas('user', function ($uq) use ($search) {
+                      $uq->where('name', 'ilike', "%{$search}%");
+                  });
+            });
+        }
+
+        $patients = $query->paginate($request->get('per_page', 15));
 
         return response()->json(['data' => $patients]);
     }
+
 
     /**
      * Get a specific patient with their appointments and diagnostics.
