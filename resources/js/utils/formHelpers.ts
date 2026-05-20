@@ -14,16 +14,16 @@ export interface TestUser {
 export const testUsers: TestUser[] = [
   { name: 'Admin Principal', email: 'admin@larahealth.com', password: 'password', role: 'Admin' },
   { name: 'Operador João', email: 'operacional@larahealth.com', password: 'password', role: 'Operacional' },
-  { name: 'Dr(a). Cardiologia', email: 'dr.Cardiologia@larahealth.com', password: 'password', role: 'Profissional' },
-  { name: 'Dr(a). Dermatologia', email: 'dr.Dermatologia@larahealth.com', password: 'password', role: 'Profissional' },
-  { name: 'Dr(a). Ortopedia', email: 'dr.Ortopedia@larahealth.com', password: 'password', role: 'Profissional' },
-  { name: 'Dr(a). Pediatria', email: 'dr.Pediatria@larahealth.com', password: 'password', role: 'Profissional' },
-  { name: 'Dr(a). Neurologia', email: 'dr.Neurologia@larahealth.com', password: 'password', role: 'Profissional' },
-  { name: 'Dr(a). Ginecologia', email: 'dr.Ginecologia@larahealth.com', password: 'password', role: 'Profissional' },
-  { name: 'Dr(a). Oftalmologia', email: 'dr.Oftalmologia@larahealth.com', password: 'password', role: 'Profissional' },
-  { name: 'Dr(a). Psiquiatria', email: 'dr.Psiquiatria@larahealth.com', password: 'password', role: 'Profissional' },
-  { name: 'Dr(a). Endocrinologia', email: 'dr.Endocrinologia@larahealth.com', password: 'password', role: 'Profissional' },
-  { name: 'Dr(a). Urologia', email: 'dr.Urologia@larahealth.com', password: 'password', role: 'Profissional' },
+  { name: 'Carlos Almeida', email: 'dr.Cardiologia@larahealth.com', password: 'password', role: 'Profissional' },
+  { name: 'Ana Beatriz Barbosa', email: 'dr.Dermatologia@larahealth.com', password: 'password', role: 'Profissional' },
+  { name: 'Rafael Costa', email: 'dr.Ortopedia@larahealth.com', password: 'password', role: 'Profissional' },
+  { name: 'Juliana Dias', email: 'dr.Pediatria@larahealth.com', password: 'password', role: 'Profissional' },
+  { name: 'Fernando Fernandes', email: 'dr.Neurologia@larahealth.com', password: 'password', role: 'Profissional' },
+  { name: 'Marina Gomes', email: 'dr.Ginecologia@larahealth.com', password: 'password', role: 'Profissional' },
+  { name: 'Thiago Lima', email: 'dr.Oftalmologia@larahealth.com', password: 'password', role: 'Profissional' },
+  { name: 'Camila Martins', email: 'dr.Psiquiatria@larahealth.com', password: 'password', role: 'Profissional' },
+  { name: 'Eduardo Nogueira', email: 'dr.Endocrinologia@larahealth.com', password: 'password', role: 'Profissional' },
+  { name: 'Patrícia Oliveira', email: 'dr.Urologia@larahealth.com', password: 'password', role: 'Profissional' },
 ]
 
 /** Generate a valid test CPF (without validation, just for filling forms) */

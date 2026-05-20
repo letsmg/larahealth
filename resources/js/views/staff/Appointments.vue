@@ -116,7 +116,7 @@
               class="text-[9px] leading-tight px-1 py-0.5 rounded bg-red-100 text-red-700 truncate"
               :title="`${prof.name} - Indisponível`"
             >
-              {{ prof.name.split(' ')[0] }}
+              {{ getShortName(prof.name) }}
             </div>
           </div>
 
@@ -139,35 +139,70 @@
 
     <!-- Lista de agendamentos do dia selecionado -->
     <div v-if="selectedDate" class="bg-white rounded-xl border border-emerald-200 overflow-hidden shadow-sm">
-      <div class="px-6 py-4 bg-emerald-50 border-b border-emerald-200">
+      <div class="px-6 py-4 bg-emerald-50 border-b border-emerald-200 flex items-center justify-between">
         <h3 class="font-semibold text-emerald-900">
           Agendamentos de {{ formatDateFull(selectedDate) }}
+          <span v-if="selectedProfessionalName" class="text-emerald-500 text-sm font-normal ml-2">
+            — {{ selectedProfessionalName }}
+          </span>
         </h3>
+        <span class="text-xs text-emerald-500 bg-emerald-100 px-2 py-1 rounded-full">
+          {{ selectedDayAppointments.length }} agendamento(s)
+        </span>
       </div>
       <div v-if="selectedDayAppointments.length === 0" class="p-6 text-center text-emerald-500 text-sm">
         Nenhum agendamento para esta data.
       </div>
       <div v-for="apt in selectedDayAppointments" :key="apt.id" class="p-4 border-b border-emerald-100 last:border-b-0 hover:bg-emerald-50/50 transition-colors">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="font-medium text-emerald-900">{{ apt.patient?.full_name || 'Paciente' }}</p>
-            <p class="text-sm text-emerald-600">{{ apt.professional?.full_name }} ({{ apt.professional?.specialty }})</p>
-            <p class="text-xs text-emerald-500 mt-1">{{ formatTime(apt.appointment_date) }} — {{ formatDate(apt.appointment_date) }}</p>
-            <p v-if="apt.notes" class="text-sm text-emerald-700 mt-1">{{ apt.notes }}</p>
-            <div class="flex gap-2 mt-2">
-              <span class="text-xs px-2 py-0.5 rounded-full" :class="apt.is_paid ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex-1 min-w-0">
+            <!-- Paciente -->
+            <div class="flex items-center gap-2 mb-1">
+              <svg class="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <p class="font-medium text-emerald-900 truncate">{{ apt.patient?.full_name || 'Paciente' }}</p>
+            </div>
+            <!-- Profissional -->
+            <div class="flex items-center gap-2 mb-1">
+              <svg class="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              <p class="text-sm text-emerald-700 truncate">
+                <span class="font-medium">{{ apt.professional?.full_name }}</span>
+                <span v-if="apt.professional?.specialty" class="text-emerald-500"> ({{ apt.professional.specialty }})</span>
+              </p>
+            </div>
+            <!-- Data e Hora -->
+            <div class="flex items-center gap-2 mb-1">
+              <svg class="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p class="text-xs text-emerald-600">{{ formatDate(apt.appointment_date) }} às {{ formatTime(apt.appointment_date) }}</p>
+            </div>
+            <!-- Observações -->
+            <p v-if="apt.notes" class="text-sm text-emerald-700 mt-2 ml-6 italic border-l-2 border-emerald-200 pl-3">{{ apt.notes }}</p>
+            <!-- Tags -->
+            <div class="flex flex-wrap gap-2 mt-2 ml-6">
+              <span class="text-xs px-2.5 py-1 rounded-full font-medium" :class="apt.is_paid ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'">
                 {{ apt.is_paid ? 'Pago' : 'A pagar' }}
               </span>
-              <span v-if="apt.is_return" class="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
+              <span v-if="apt.is_return" class="text-xs px-2.5 py-1 rounded-full font-medium bg-blue-100 text-blue-700">
                 Retorno
+              </span>
+              <span v-if="!apt.is_return" class="text-xs px-2.5 py-1 rounded-full font-medium bg-purple-100 text-purple-700">
+                Consulta inicial
+              </span>
+              <span v-if="apt.payment_method" class="text-xs px-2.5 py-1 rounded-full font-medium bg-gray-100 text-gray-700">
+                {{ paymentMethodLabel(apt.payment_method) }}
               </span>
             </div>
           </div>
-          <div class="flex gap-2">
-            <button @click="editAppointment(apt)" class="px-3 py-1.5 text-xs text-emerald-600 hover:bg-emerald-100 rounded-lg transition-colors">
+          <div class="flex gap-2 shrink-0">
+            <button @click="editAppointment(apt)" class="px-3 py-1.5 text-xs text-emerald-600 hover:bg-emerald-100 rounded-lg transition-colors border border-emerald-200">
               Editar
             </button>
-            <button @click="deleteAppointment(apt)" class="px-3 py-1.5 text-xs text-red-600 hover:bg-red-100 rounded-lg transition-colors">
+            <button @click="deleteAppointment(apt)" class="px-3 py-1.5 text-xs text-red-600 hover:bg-red-100 rounded-lg transition-colors border border-red-200">
               Remover
             </button>
           </div>
@@ -193,6 +228,8 @@
                 placeholder="Digite o nome do paciente..."
                 required
                 @input="searchPatients"
+                @focus="searchPatients"
+                autocomplete="off"
                 class="w-full px-4 py-2.5 border border-emerald-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-colors bg-emerald-50/30"
               />
               <ul
@@ -225,6 +262,8 @@
                 placeholder="Digite o nome do profissional..."
                 required
                 @input="searchProfessionals"
+                @focus="searchProfessionals"
+                autocomplete="off"
                 class="w-full px-4 py-2.5 border border-emerald-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-colors bg-emerald-50/30"
               />
               <ul
@@ -527,6 +566,12 @@ const selectedDayAppointments = computed(() => {
   })
 })
 
+const selectedProfessionalName = computed(() => {
+  if (!filterProfessional.value) return ''
+  const prof = professionals.value.find((p: any) => p.id === Number(filterProfessional.value))
+  return prof ? `${prof.full_name} (${prof.specialty})` : ''
+})
+
 // ========== Métodos ==========
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString('pt-BR')
@@ -543,6 +588,34 @@ function formatDateFull(date: string) {
 
 function formatTime(date: string) {
   return new Date(date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+}
+
+/**
+ * Extrai o primeiro nome real, ignorando prefixos como "Dr(a).", "Dr.", "Dra."
+ */
+function getShortName(fullName: string): string {
+  const name = fullName.trim()
+  // Remove prefixos comuns como "Dr(a).", "Dr.", "Dra." no início
+  const cleaned = name.replace(/^(Dr\(a\)\.?\s*|Dr\.?\s*|Dra\.?\s*)/i, '').trim()
+  // Pega a primeira palavra do nome limpo
+  const firstName = cleaned.split(' ')[0]
+  return firstName || name.split(' ')[0]
+}
+
+function paymentMethodLabel(method: string): string {
+
+  const labels: Record<string, string> = {
+    dinheiro: 'Dinheiro',
+    cartao_credito: 'Cartão de Crédito',
+    cartao_debito: 'Cartão de Débito',
+    pix: 'PIX',
+    convenio: 'Convênio',
+    credit_card: 'Cartão de Crédito',
+    debit_card: 'Cartão de Débito',
+    cash: 'Dinheiro',
+    health_insurance: 'Convênio',
+  }
+  return labels[method] || method
 }
 
 function prevMonth() {
@@ -618,14 +691,14 @@ async function fetchUnavailableDates() {
 }
 
 // Busca de pacientes (autocomplete)
-let searchTimeout: ReturnType<typeof setTimeout> | null = null
+let patientSearchTimeout: ReturnType<typeof setTimeout> | null = null
 function searchPatients() {
-  if (searchTimeout) clearTimeout(searchTimeout)
+  if (patientSearchTimeout) clearTimeout(patientSearchTimeout)
   if (!patientSearch.value || patientSearch.value.length < 2) {
     patientResults.value = []
     return
   }
-  searchTimeout = setTimeout(async () => {
+  patientSearchTimeout = setTimeout(async () => {
     try {
       const { data } = await axios.get('/staff/appointments/search/patients', { params: { q: patientSearch.value } })
       patientResults.value = data.data || []
@@ -648,13 +721,14 @@ function clearPatient() {
 }
 
 // Busca de profissionais (autocomplete)
+let professionalSearchTimeout: ReturnType<typeof setTimeout> | null = null
 function searchProfessionals() {
-  if (searchTimeout) clearTimeout(searchTimeout)
+  if (professionalSearchTimeout) clearTimeout(professionalSearchTimeout)
   if (!professionalSearch.value || professionalSearch.value.length < 2) {
     professionalResults.value = []
     return
   }
-  searchTimeout = setTimeout(async () => {
+  professionalSearchTimeout = setTimeout(async () => {
     try {
       const { data } = await axios.get('/staff/appointments/search/professionals', { params: { q: professionalSearch.value } })
       professionalResults.value = data.data || []

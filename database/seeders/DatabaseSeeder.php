@@ -53,10 +53,23 @@ class DatabaseSeeder extends Seeder
             'Endocrinologia', 'Urologia',
         ];
 
+        $firstNames = [
+            'Carlos', 'Ana Beatriz', 'Rafael', 'Juliana',
+            'Fernando', 'Marina', 'Thiago', 'Camila',
+            'Eduardo', 'Patrícia',
+        ];
+
+        $lastNames = [
+            'Almeida', 'Barbosa', 'Costa', 'Dias',
+            'Fernandes', 'Gomes', 'Lima', 'Martins',
+            'Nogueira', 'Oliveira',
+        ];
+
         $professionals = [];
         foreach ($specialties as $i => $specialty) {
+            $fullName = "{$firstNames[$i]} {$lastNames[$i]}";
             $user = User::factory()->create([
-                'name' => "Dr(a). {$specialty}",
+                'name' => $fullName,
                 'email' => "dr.{$specialty}@larahealth.com",
                 'password' => Hash::make('password'),
                 'role' => UserRole::Operational,
@@ -64,7 +77,7 @@ class DatabaseSeeder extends Seeder
 
             $professionals[] = Professional::factory()->create([
                 'user_id' => $user->id,
-                'full_name' => "Dr(a). {$specialty} Silva",
+                'full_name' => $fullName,
                 'specialty' => $specialty,
                 'professional_document' => fake()->numerify('CRM/'.str_pad((string)($i + 1), 2, '0', STR_PAD_LEFT).' #####'),
                 'phone' => fake()->phoneNumber(),

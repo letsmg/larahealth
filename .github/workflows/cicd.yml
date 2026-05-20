@@ -37,7 +37,7 @@ jobs:
           mkdir build-tmp
           
           # CORREÇÃO: Incluídas as pastas 'routes' e 'bootstrap' inteiras no pacote de produção
-          cp -r app bootstrap config database public routes storage vendor build-tmp/
+          cp -r app bootstrap config database public resources routes storage vendor build-tmp/
           
           # Copia os arquivos vitais da raiz do projeto
           cp artisan composer.json package.json build-tmp/
