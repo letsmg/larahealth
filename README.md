@@ -1,4 +1,4 @@
-# LaraHealth 🏥
+# Blink 👁️
 
 Sistema de gestão de saúde com arquitetura baseada em APIs RESTful, construído com Laravel.
 
@@ -6,7 +6,8 @@ Sistema de gestão de saúde com arquitetura baseada em APIs RESTful, construíd
 
 ## Sobre o Projeto
 
-LaraHealth é um sistema de gestão clínica/hospitalar que oferece:
+Blink é um sistema de gestão clínica/hospitalar que oferece:
+
 - Cadastro e gerenciamento de pacientes
 - Agendamento de consultas com controle de pagamento e retorno
 - Gestão de profissionais de saúde
@@ -25,6 +26,7 @@ LaraHealth é um sistema de gestão clínica/hospitalar que oferece:
 ### Padrão de Projeto
 
 MVC expandido com:
+
 - **Controllers**: Pontos de entrada da API
 - **Services**: Regras de negócio
 - **Repositories**: Consultas e persistência
@@ -43,6 +45,7 @@ MVC expandido com:
 ### Funcionalidades Implementadas
 
 #### ✅ Registro e Autenticação
+
 - Registro de pacientes com validação de CPF
 - Login com geração de token
 - Logout e perfil do usuário
@@ -50,11 +53,13 @@ MVC expandido com:
 - **Facilitador de Login**: Lista de usuários de teste na tela de login com preenchimento automático ao clicar
 
 #### ✅ Gestão de Pacientes (Staff)
+
 - Listagem paginada
 - Visualização detalhada (com consultas e diagnósticos)
 - Atualização de perfil
 
 #### ✅ Sistema de Mensageria (Staff)
+
 - Envio de mensagens internas
 - Listagem de mensagens recebidas
 - Marcação de leitura
@@ -62,6 +67,7 @@ MVC expandido com:
 - Botão "Preencher Teste" no formulário de nova mensagem
 
 #### ✅ Gestão de Indisponibilidade de Profissionais
+
 - Cadastro de períodos em que o profissional não atenderá
 - Validação de sobreposição de períodos
 - Listagem de períodos futuros para calendário
@@ -69,6 +75,7 @@ MVC expandido com:
 - Botão "Preencher Teste" no formulário
 
 #### ✅ Auxiliares de Desenvolvimento (Front-end)
+
 - **`formHelpers.ts`**: Arquivo TypeScript com funções helper para preenchimento automático de formulários
 - Botão **"Preencher Teste"** em todas as páginas de cadastro (Register, Messages, Unavailability)
 - Botão **"Limpar"** no formulário de cadastro de paciente
@@ -77,12 +84,14 @@ MVC expandido com:
 ### Rotas da API
 
 #### Públicas
+
 | Método | Rota | Descrição |
 |--------|------|-----------|
 | POST | `/api/register` | Registro de paciente |
 | POST | `/api/login` | Login |
 
 #### Autenticadas
+
 | Método | Rota | Descrição |
 |--------|------|-----------|
 | POST | `/api/logout` | Logout |
@@ -90,6 +99,7 @@ MVC expandido com:
 | POST | `/api/accept-terms` | Aceitar termos |
 
 #### Staff (Admin + Operational)
+
 | Método | Rota | Descrição |
 |--------|------|-----------|
 | GET | `/api/staff/messages` | Listar mensagens |
@@ -117,13 +127,13 @@ php artisan test
 
 ## English Version
 
-# LaraHealth 🏥
+# Blink 👁️
 
 Healthcare management system with RESTful API architecture, built with Laravel.
 
 ### About
 
-LaraHealth is a clinical/hospital management system featuring patient registration, appointment scheduling, professional management, diagnostics, internal messaging, **professional unavailability management**, and consolidated reports.
+Blink is a clinical/hospital management system featuring patient registration, appointment scheduling, professional management, diagnostics, internal messaging, **professional unavailability management**, and consolidated reports.
 
 ### Architecture
 
