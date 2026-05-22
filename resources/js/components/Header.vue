@@ -8,7 +8,7 @@
           <div class="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
             <span class="text-white font-bold text-sm">LH</span>
           </div>
-          <span class="text-lg font-bold text-gray-900">LaraHealth</span>
+          <span class="text-lg font-bold text-gray-900">Blink</span>
         </router-link>
 
         <!-- Navigation -->

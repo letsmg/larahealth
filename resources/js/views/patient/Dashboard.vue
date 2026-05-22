@@ -2,7 +2,7 @@
   <div class="max-w-4xl mx-auto">
     <div class="bg-white rounded-2xl shadow-lg p-8">
       <h2 class="text-2xl font-semibold text-gray-900 mb-2">Meu Perfil</h2>
-      <p class="text-gray-500 mb-6">Bem-vindo ao LaraHealth, {{ user.name }}!</p>
+      <p class="text-gray-500 mb-6">Bem-vindo ao Blink, {{ user.name }}!</p>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div class="p-4 bg-emerald-50 rounded-xl">

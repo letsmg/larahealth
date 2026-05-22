@@ -59,7 +59,7 @@ class BirthdayService
             }
 
             $body .= "\nNão se esqueça de dar os parabéns! 🎈\n";
-            $body .= "— Sistema LaraHealth";
+            $body .= "— Sistema Blink";
 
             // Cria a mensagem como sendo do sistema (sender_id = null ou um user admin)
             // Usamos o primeiro admin encontrado como sender, ou null se não houver

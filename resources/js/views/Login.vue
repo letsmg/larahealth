@@ -5,7 +5,7 @@
       <!-- Left: Login Form -->
       <div class="p-8 md:p-10 flex-1">
         <div class="mb-8">
-          <h1 class="text-2xl font-bold text-gray-900">LaraHealth</h1>
+          <h1 class="text-2xl font-bold text-gray-900">Blink</h1>
           <p class="text-gray-500 mt-1">Sistema de Gestão de Saúde</p>
         </div>
 

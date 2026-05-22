@@ -5,7 +5,7 @@
     <!-- Sidebar -->
     <aside class="w-64 bg-white border-r border-gray-200 flex flex-col">
       <div class="p-6 border-b border-gray-200">
-        <h1 class="text-xl font-bold text-gray-900">LaraHealth</h1>
+        <h1 class="text-xl font-bold text-gray-900">Blink</h1>
         <p class="text-sm text-gray-500">{{ areaLabel }}</p>
       </div>
 

@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
         // Admin
         $adminUser = User::factory()->create([
             'name' => 'Admin Principal',
-            'email' => 'admin@larahealth.com',
+            'email' => 'admin@blink.com',
             'password' => Hash::make('password'),
             'role' => UserRole::Admin,
         ]);
@@ -36,7 +36,7 @@ class DatabaseSeeder extends Seeder
         // Operational
         $opUser = User::factory()->create([
             'name' => 'Operador João',
-            'email' => 'operacional@larahealth.com',
+            'email' => 'operacional@blink.com',
             'password' => Hash::make('password'),
             'role' => UserRole::Operational,
         ]);
@@ -70,7 +70,7 @@ class DatabaseSeeder extends Seeder
             $fullName = "{$firstNames[$i]} {$lastNames[$i]}";
             $user = User::factory()->create([
                 'name' => $fullName,
-                'email' => "dr.{$specialty}@larahealth.com",
+                'email' => "dr.{$specialty}@blink.com",
                 'password' => Hash::make('password'),
                 'role' => UserRole::Operational,
             ]);
