@@ -2,12 +2,13 @@
   <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50">
     <!-- Hero Section -->
     <section class="relative overflow-hidden">
-      <!-- Background Pattern -->
-      <div class="absolute inset-0 opacity-5">
-        <div class="absolute top-0 -left-4 w-72 h-72 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-        <div class="absolute top-0 -right-4 w-72 h-72 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
-        <div class="absolute -bottom-8 left-20 w-72 h-72 bg-teal-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
-      </div>
+      <!-- Background Image -->
+      <div
+        class="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style="background-image: url('/storage/fundo2.png');"
+      ></div>
+      <!-- Overlay escuro para melhor legibilidade do texto -->
+      <div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/60"></div>
 
       <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
         <div class="text-center">
@@ -24,12 +25,13 @@
             </div>
           </div>
 
-          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
             Sua saúde em
-            <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">boas mãos</span>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-teal-300">boas mãos</span>
           </h1>
-          <p class="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto mb-10 leading-relaxed">
-            O <strong class="text-emerald-600">Blink</strong> é o sistema inteligente de gestão de clínicas e consultórios.
+          <p class="text-lg sm:text-xl text-gray-200 max-w-2xl mx-auto mb-10 leading-relaxed">
+            O <strong class="text-emerald-300">Blink</strong> é o sistema inteligente de gestão de clínicas e consultórios.
+
             Agende consultas, gerencie pacientes e organize sua agenda com praticidade e segurança.
           </p>
 
