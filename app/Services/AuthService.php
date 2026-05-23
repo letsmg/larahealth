@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\UserRole;
+use App\Models\TermAcceptance;
 use App\Models\User;
 use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\Hash;
@@ -17,6 +18,9 @@ class AuthService
 
     /**
      * Register a new patient user.
+     *
+     * Se um visitor_uuid for fornecido, vincula o aceite de termos anônimo
+     * ao novo usuário criado (consolidação histórica).
      */
     public function registerPatient(array $data): array
     {
@@ -43,6 +47,23 @@ class AuthService
             'clinical_history' => $data['clinical_history'] ?? null,
         ]);
 
+        // Vincula o visitor_uuid ao user_id (consolidação histórica do aceite de termos)
+        if (! empty($data['visitor_uuid'])) {
+            TermAcceptance::where('visitor_uuid', $data['visitor_uuid'])
+                ->whereNull('user_id')
+                ->update(['user_id' => $user->id]);
+        }
+
+        // Se o usuário aceitou os termos no formulário de registro (fallback),
+        // registra o aceite diretamente
+        if (! empty($data['terms_accepted'])) {
+            $user->update([
+                'terms_accepted' => true,
+                'terms_accepted_at' => now(),
+                'terms_version' => '1.0',
+            ]);
+        }
+
         $token = $user->createToken('auth-token')->plainTextToken;
 
         return ['user' => $user, 'token' => $token];
@@ -55,7 +76,7 @@ class AuthService
     {
         $user = $this->userRepository->findByEmail($credentials['email']);
 
-        if (!$user || !Hash::check($credentials['password'], $user->password)) {
+        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['As credenciais fornecidas estão incorretas.'],
             ]);

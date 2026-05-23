@@ -57,6 +57,7 @@ class DatabaseSeeder extends Seeder
             $seedUser->update([
                 'terms_accepted' => true,
                 'terms_accepted_at' => now(),
+                'terms_version' => '1.0',
             ]);
 
             TermAcceptance::create([

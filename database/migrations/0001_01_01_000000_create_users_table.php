@@ -22,6 +22,8 @@ return new class extends Migration
             $table->tinyInteger('role')->default(UserRole::Patient->value); // 0=Patient, 1=Admin, 2=Operational
             $table->boolean('terms_accepted')->default(false); // GDPR/Terms acceptance flag
             $table->timestamp('terms_accepted_at')->nullable(); // When the user accepted the terms
+            $table->string('terms_version', 20)->nullable(); // Version of terms accepted (for governance)
+
             $table->rememberToken();
             $table->timestamps();
         });

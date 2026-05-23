@@ -18,7 +18,7 @@ class RegisterPatientRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      * Double validation: backend security layer for patient registration.
-     * 
+     *
      * Sanitização de entrada aplicada via SanitizeInput middleware.
      * CPF validado estruturalmente com algoritmo de dígitos verificadores.
      */
@@ -37,6 +37,10 @@ class RegisterPatientRequest extends FormRequest
             'state' => ['nullable', 'string', 'size:2'],
             'zip_code' => ['nullable', 'string', 'max:10'],
             'clinical_history' => ['nullable', 'string', 'max:5000'],
+            // visitor_uuid para consolidação histórica do aceite de termos
+            'visitor_uuid' => ['nullable', 'string', 'size:36'],
+            // terms_accepted para fallback quando cookie/sessionStorage é perdido
+            'terms_accepted' => ['nullable', 'boolean'],
         ];
     }
 

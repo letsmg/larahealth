@@ -17,35 +17,42 @@ class TermController extends Controller
     /**
      * Registra o aceite dos termos por um visitante ou usuário logado.
      *
-     * Salva permanentemente no banco de dados o IP, geolocalização e
-     * user-agent no momento do aceite.
-     * Mantém histórico separado para visitantes (VisitorGeolocation)
-     * e usuários logados (UserGeolocation).
+     * Salva permanentemente no banco de dados o visitor_uuid, IP, geolocalização
+     * e user-agent no momento do aceite.
+     *
+     * Regras LGPD seguidas:
+     * - NENHUMA coleta de dados é feita antes do aceite explícito
+     * - O visitor_uuid identifica anonimamente o visitante
+     * - A geolocalização é coletada via backend (GeoIP) no momento do aceite
+     * - O aceite fica registrado permanentemente no banco (não apenas em cookie/sessão)
      */
     public function accept(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'term_type' => 'required|in:terms_of_use,privacy_policy,both',
             'terms_version' => 'nullable|string|max:20',
+            'visitor_uuid' => 'nullable|string|size:36|uuid',
         ]);
 
         $termType = $validated['term_type'];
         $termsVersion = $validated['terms_version'] ?? '1.0';
+        $visitorUuid = $validated['visitor_uuid'] ?? null;
 
-        // Registra geolocalização separadamente:
-        // - Visitantes (não logados) vão para visitor_geolocations
-        // - Usuários logados vão para user_geolocations
-        if ($request->user()) {
-            $this->geolocationService->recordUser($request, $request->user(), $termType, $termsVersion);
-        } else {
-            $this->geolocationService->recordVisitor($request, $termType, $termsVersion);
-        }
+        // Coleta geolocalização via backend (GeoIP) APENAS no momento do aceite
+        // Usa o IP do visitante para resolver localização aproximada
+        $geoData = $this->geolocationService->locate($request->ip());
 
-        // Registra o aceite na tabela term_acceptances (mantida para compatibilidade)
+        // Registra o aceite na tabela term_acceptances
         $acceptance = TermAcceptance::create([
+            'visitor_uuid' => $visitorUuid,
             'user_id' => $request->user()?->id,
             'term_type' => $termType,
             'ip_address' => $request->ip(),
+            'country' => $geoData['country'] ?? null,
+            'region' => $geoData['region'] ?? null,
+            'city' => $geoData['city'] ?? null,
+            'latitude' => $geoData['latitude'] ?? null,
+            'longitude' => $geoData['longitude'] ?? null,
             'user_agent' => $request->userAgent(),
             'terms_version' => $termsVersion,
         ]);
@@ -55,6 +62,7 @@ class TermController extends Controller
             $request->user()->update([
                 'terms_accepted' => true,
                 'terms_accepted_at' => now(),
+                'terms_version' => $termsVersion,
             ]);
         }
 
@@ -67,7 +75,7 @@ class TermController extends Controller
     /**
      * Verifica se o visitante atual já aceitou os termos.
      *
-     * Para visitantes não logados, verifica pelo IP.
+     * Para visitantes não logados, verifica pelo visitor_uuid.
      * Para usuários logados, verifica pelo user_id.
      */
     public function check(Request $request): JsonResponse
@@ -78,8 +86,14 @@ class TermController extends Controller
             // Usuário logado: verifica pelo user_id
             $query->where('user_id', $request->user()->id);
         } else {
-            // Visitante não logado: verifica pelo IP
-            $query->where('ip_address', $request->ip());
+            // Visitante não logado: verifica pelo visitor_uuid (enviado como query param)
+            $visitorUuid = $request->query('visitor_uuid');
+            if ($visitorUuid) {
+                $query->where('visitor_uuid', $visitorUuid);
+            } else {
+                // Fallback: verifica pelo IP (para compatibilidade)
+                $query->where('ip_address', $request->ip());
+            }
         }
 
         // Verifica se existe um aceite do tipo 'both' ou 'terms_of_use'
@@ -91,5 +105,18 @@ class TermController extends Controller
         return response()->json([
             'accepted' => $hasAccepted,
         ]);
+    }
+
+    /**
+     * Vincula um visitor_uuid a um user_id (consolidação histórica).
+     *
+     * Chamado durante o registro do usuário para associar o aceite anônimo
+     * anterior ao novo usuário criado.
+     */
+    public function linkVisitorToUser(string $visitorUuid, int $userId): void
+    {
+        TermAcceptance::where('visitor_uuid', $visitorUuid)
+            ->whereNull('user_id')
+            ->update(['user_id' => $userId]);
     }
 }

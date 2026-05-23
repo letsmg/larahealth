@@ -127,6 +127,24 @@
           />
         </div>
 
+        <!-- Checkbox de aceite de termos (fallback para quando o cookie/sessionStorage é perdido) -->
+        <div class="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input
+              v-model="form.terms_accepted"
+              type="checkbox"
+              class="mt-1 h-4 w-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
+            />
+            <span class="text-sm text-gray-600 leading-relaxed">
+              Aceito os
+              <router-link to="/terms-of-use" class="text-emerald-600 hover:text-emerald-700 font-medium underline">Termos de Uso</router-link>
+              e a
+              <router-link to="/privacy-policy" class="text-emerald-600 hover:text-emerald-700 font-medium underline">Política de Privacidade</router-link>.
+              Meus dados de navegação (IP e geolocalização) serão registrados conforme a LGPD.
+            </span>
+          </label>
+        </div>
+
         <div v-if="error" class="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
           {{ error }}
         </div>
@@ -150,7 +168,7 @@
 
         <button
           type="submit"
-          :disabled="loading"
+          :disabled="loading || !form.terms_accepted"
           class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
         >
           {{ loading ? 'Cadastrando...' : 'Cadastrar' }}
@@ -170,6 +188,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { generateTestPatientData } from '../utils/formHelpers'
+import { getVisitorId } from '../utils/visitorId'
 import { useMeta } from '../composables/useMeta'
 
 onMounted(() => {
@@ -197,6 +216,7 @@ const form = ref({
   state: '',
   password: '',
   password_confirmation: '',
+  terms_accepted: false,
 })
 
 function fillTestData() {
@@ -212,6 +232,7 @@ function fillTestData() {
   form.value.state = data.state
   form.value.password = data.password
   form.value.password_confirmation = data.password_confirmation
+  form.value.terms_accepted = true
   error.value = ''
 }
 
@@ -228,6 +249,7 @@ function clearForm() {
     state: '',
     password: '',
     password_confirmation: '',
+    terms_accepted: false,
   }
   error.value = ''
 }
@@ -238,8 +260,17 @@ async function handleRegister() {
   error.value = ''
 
   try {
+    // Obtém o visitor_uuid para vincular o aceite anônimo ao novo usuário
+    const visitorUuid = getVisitorId()
+
+    // Monta o payload com o visitor_uuid para consolidação histórica
+    const payload = {
+      ...form.value,
+      visitor_uuid: visitorUuid,
+    }
+
     // Token é armazenado em cookie HttpOnly pelo backend (inacessível via JS)
-    const { data } = await axios.post('/register', form.value)
+    const { data } = await axios.post('/register', payload)
 
     localStorage.setItem('user', JSON.stringify(data.user))
 

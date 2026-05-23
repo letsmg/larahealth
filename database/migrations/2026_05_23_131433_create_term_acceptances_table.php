@@ -13,11 +13,21 @@ return new class extends Migration
      * Intenção: Registrar permanentemente no banco de dados o aceite dos termos
      * por visitantes (não logados) e usuários logados, incluindo IP e geolocalização
      * para conformidade com LGPD. O aceite NÃO fica apenas em cookies/sessão.
+     *
+     * Regras LGPD:
+     * - visitor_uuid: Identificador anônimo do visitante (UUID v4)
+     * - user_id: Vinculado apenas se o visitante se cadastrar posteriormente
+     * - NENHUMA coleta de dados é feita antes do aceite explícito
+     * - Geolocalização é coletada via backend (GeoIP) no momento do aceite
      */
     public function up(): void
     {
         Schema::create('term_acceptances', function (Blueprint $table) {
             $table->id();
+
+            // Identificador anônimo do visitante (UUID v4) - gerado no front-end
+            // Permite vincular o aceite anônimo ao usuário quando ele se cadastrar
+            $table->string('visitor_uuid', 36)->nullable()->index();
 
             // Quem aceitou (nullable para visitantes não logados)
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
@@ -44,6 +54,7 @@ return new class extends Migration
             // Índices para consultas eficientes
             $table->index('user_id');
             $table->index('created_at');
+
         });
     }
 
