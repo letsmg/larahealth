@@ -40,7 +40,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // Auth & Profile
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
-    Route::post('/accept-terms', [AuthController::class, 'acceptTerms']);
 
     // =============================================
     // Patient Area (Patient role only)
