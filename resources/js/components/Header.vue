@@ -1,6 +1,7 @@
 <template>
   <!-- Header público: navegação superior responsiva com tema hospitalar/saúde -->
-  <header class="bg-white/95 backdrop-blur-sm border-b border-emerald-100 sticky top-0 z-50">
+  <header class="bg-gradient-to-r from-emerald-700 to-teal-800 shadow-lg sticky top-0 z-50">
+
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16 lg:h-20">
         <!-- Logo -->
@@ -10,33 +11,34 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342" />
             </svg>
           </div>
-          <span class="text-xl font-bold text-gray-900 group-hover:text-emerald-700 transition-colors">Blink</span>
+          <span class="text-xl font-bold text-white group-hover:text-emerald-200 transition-colors">Blink</span>
+
         </router-link>
 
         <!-- Desktop Navigation -->
         <nav class="hidden md:flex items-center gap-8">
           <router-link
             to="/"
-            class="text-sm font-medium text-gray-600 hover:text-emerald-600 transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-emerald-500 after:transition-all hover:after:w-full"
+            class="text-sm font-medium text-emerald-100 hover:text-white transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-emerald-300 after:transition-all hover:after:w-full"
             exact
           >
             Início
           </router-link>
           <a
             href="#recursos"
-            class="text-sm font-medium text-gray-600 hover:text-emerald-600 transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-emerald-500 after:transition-all hover:after:w-full"
+            class="text-sm font-medium text-emerald-100 hover:text-white transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-emerald-300 after:transition-all hover:after:w-full"
           >
             Recursos
           </a>
           <router-link
             to="/login"
-            class="text-sm font-medium text-gray-600 hover:text-emerald-600 transition-colors"
+            class="text-sm font-medium text-emerald-100 hover:text-white transition-colors"
           >
             Entrar
           </router-link>
           <router-link
             to="/register"
-            class="text-sm font-medium px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl hover:from-emerald-700 hover:to-teal-700 transition-all shadow-md shadow-emerald-200 hover:shadow-lg"
+            class="text-sm font-medium px-5 py-2.5 bg-white text-emerald-700 rounded-xl hover:bg-emerald-50 transition-all shadow-md hover:shadow-lg"
           >
             Cadastre-se
           </router-link>
@@ -45,9 +47,10 @@
         <!-- Mobile Menu Button -->
         <button
           @click="mobileOpen = !mobileOpen"
-          class="md:hidden p-2 rounded-lg text-gray-600 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
+          class="md:hidden p-2 rounded-lg text-emerald-100 hover:bg-emerald-600/30 hover:text-white transition-colors"
           :aria-label="mobileOpen ? 'Fechar menu' : 'Abrir menu'"
         >
+
           <svg v-if="!mobileOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
           </svg>

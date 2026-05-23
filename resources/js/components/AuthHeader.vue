@@ -13,12 +13,13 @@
 
     <!-- Sidebar para desktop e menu responsivo para celular -->
     <aside
-      class="w-64 bg-white border-r border-gray-200 flex flex-col fixed inset-y-0 left-0 z-30 transform md:relative md:translate-x-0 transition-transform duration-200 ease-in-out"
+      class="w-64 bg-gradient-to-b from-emerald-700 to-teal-800 flex flex-col fixed inset-y-0 left-0 z-30 transform md:relative md:translate-x-0 transition-transform duration-200 ease-in-out"
       :class="{ '-translate-x-full': !isSidebarOpen && isMobile }"
     >
-      <div class="p-6 border-b border-gray-200">
-        <h1 class="text-xl font-bold text-gray-900">Blink</h1>
-        <p class="text-sm text-gray-500">{{ areaLabel }}</p>
+      <div class="p-6 border-b border-emerald-600/30">
+        <h1 class="text-xl font-bold text-white">Blink</h1>
+        <p class="text-sm text-emerald-200">{{ areaLabel }}</p>
+
       </div>
 
       <nav class="flex-1 p-4 space-y-1">
@@ -26,7 +27,7 @@
         <router-link
           :to="dashboardPath"
           class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
-          :class="isActive(dashboardPath) ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 hover:bg-gray-100'"
+          :class="isActive(dashboardPath) ? 'bg-emerald-500/20 text-emerald-200' : 'text-emerald-100 hover:bg-emerald-600/30 hover:text-white'"
           @click="isMobile && (isSidebarOpen = false)"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -45,7 +46,7 @@
           <router-link
             to="/patient/messages"
             class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
-            :class="isActive('/patient/messages') ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 hover:bg-gray-100'"
+            :class="isActive('/patient/messages') ? 'bg-emerald-500/20 text-emerald-200' : 'text-emerald-100 hover:bg-emerald-600/30 hover:text-white'"
             @click="isMobile && (isSidebarOpen = false)"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,7 +63,7 @@
           <router-link
             to="/patient/edit-profile"
             class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
-            :class="isActive('/patient/edit-profile') ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 hover:bg-gray-100'"
+            :class="isActive('/patient/edit-profile') ? 'bg-emerald-500/20 text-emerald-200' : 'text-emerald-100 hover:bg-emerald-600/30 hover:text-white'"
             @click="isMobile && (isSidebarOpen = false)"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -79,7 +80,7 @@
           <router-link
             to="/patient/deactivate-account"
             class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
-            :class="isActive('/patient/deactivate-account') ? 'bg-red-50 text-red-700' : 'text-gray-600 hover:bg-gray-100'"
+            :class="isActive('/patient/deactivate-account') ? 'bg-red-500/20 text-red-200' : 'text-emerald-100 hover:bg-emerald-600/30 hover:text-white'"
             @click="isMobile && (isSidebarOpen = false)"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -100,7 +101,7 @@
           <router-link
             to="/staff/patients"
             class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
-            :class="isActive('/staff/patients') ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 hover:bg-gray-100'"
+            :class="isActive('/staff/patients') ? 'bg-emerald-500/20 text-emerald-200' : 'text-emerald-100 hover:bg-emerald-600/30 hover:text-white'"
             @click="isMobile && (isSidebarOpen = false)"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,7 +118,7 @@
           <router-link
             to="/staff/messages"
             class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors relative"
-            :class="isActive('/staff/messages') ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 hover:bg-gray-100'"
+            :class="isActive('/staff/messages') ? 'bg-emerald-500/20 text-emerald-200' : 'text-emerald-100 hover:bg-emerald-600/30 hover:text-white'"
             @click="isMobile && (isSidebarOpen = false)"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -141,7 +142,7 @@
           <router-link
             to="/staff/appointments"
             class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors relative"
-            :class="isActive('/staff/appointments') ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 hover:bg-gray-100'"
+            :class="isActive('/staff/appointments') ? 'bg-emerald-500/20 text-emerald-200' : 'text-emerald-100 hover:bg-emerald-600/30 hover:text-white'"
             @click="isMobile && (isSidebarOpen = false)"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,7 +166,7 @@
           <router-link
             to="/staff/unavailability"
             class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
-            :class="isActive('/staff/unavailability') ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 hover:bg-gray-100'"
+            :class="isActive('/staff/unavailability') ? 'bg-emerald-500/20 text-emerald-200' : 'text-emerald-100 hover:bg-emerald-600/30 hover:text-white'"
             @click="isMobile && (isSidebarOpen = false)"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -182,7 +183,7 @@
           <router-link
             to="/staff/reports"
             class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
-            :class="isActive('/staff/reports') ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 hover:bg-gray-100'"
+            :class="isActive('/staff/reports') ? 'bg-emerald-500/20 text-emerald-200' : 'text-emerald-100 hover:bg-emerald-600/30 hover:text-white'"
             @click="isMobile && (isSidebarOpen = false)"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -199,16 +200,17 @@
       </nav>
 
       <!-- User info & logout -->
-      <div class="p-4 border-t border-gray-200">
+      <div class="p-4 border-t border-emerald-600/30">
         <div class="flex items-center gap-3">
-          <div class="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
-            <span class="text-sm font-medium text-emerald-700">{{ userInitials }}</span>
+          <div class="w-8 h-8 bg-emerald-500/30 rounded-full flex items-center justify-center">
+            <span class="text-sm font-medium text-emerald-200">{{ userInitials }}</span>
           </div>
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-gray-900 truncate">{{ userName }}</p>
-            <p class="text-xs text-gray-500">{{ userRole }}</p>
+            <p class="text-sm font-medium text-white truncate">{{ userName }}</p>
+            <p class="text-xs text-emerald-200">{{ userRole }}</p>
           </div>
-          <button @click="logout" class="text-gray-400 hover:text-gray-600" title="Sair">
+          <button @click="logout" class="text-emerald-300 hover:text-white" title="Sair">
+
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
